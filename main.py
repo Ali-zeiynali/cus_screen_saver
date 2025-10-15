@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QTimer, QEasingCurve, QPropertyAnimation
 from PyQt5.QtGui import QPixmap, QFont, QCursor, QFontMetrics
 
 IMAGE_FOLDER   = "images"      # پوشه‌ی تصاویر کنار فایل
-SLIDE_DELAY_MS = 5000          # زمان هر اسلاید (میلی‌ثانیه)
+SLIDE_DELAY_MS = 10 * 1000          # زمان هر اسلاید (میلی‌ثانیه)
 
 class ScreenSaver(QWidget):
     def __init__(self):
@@ -51,7 +51,7 @@ class ScreenSaver(QWidget):
 
         self.time_label = QLabel(self)
         self.time_label.setStyleSheet(
-            "color: rgba(255, 255, 255, 0.9); background: transparent; letter-spacing: 1px;"
+            "color: rgba(255, 255, 255, 0.5); background: transparent; letter-spacing: 1px;"
         )
         self.time_label.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
         self.time_label.setMouseTracking(True)
@@ -63,8 +63,12 @@ class ScreenSaver(QWidget):
         self.signature_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.signature_label.setMouseTracking(True)
         self.signature_effect = QGraphicsOpacityEffect(self.signature_label)
-        self.signature_effect.setOpacity(0.1)
+        self.signature_effect.setOpacity(0.07)
         self.signature_label.setGraphicsEffect(self.signature_effect)
+
+        margin_x = 20   # فاصله از راست
+        margin_y = 15   # فاصله از بالا
+        font_size = 16
 
         self.setMouseTracking(True)
 
@@ -198,10 +202,8 @@ class ScreenSaver(QWidget):
         margin = int(w * 0.03)
         center_x = w // 2
         day_left = max(margin, center_x - day_width // 2)
-        sig_x = day_left + day_width + spacing
-        if sig_x + sig_width > w - margin:
-            sig_x = w - margin - sig_width
-        sig_y = day_y + max(0, (day_h - sig_h) // 2)
+        sig_x = 20
+        sig_y = 15
         self.signature_label.setGeometry(sig_x, sig_y, sig_width, sig_h)
 
     # ---------- رویدادها ----------
