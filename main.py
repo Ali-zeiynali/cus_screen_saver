@@ -1,7 +1,7 @@
 import sys, os, itertools, datetime
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QGraphicsOpacityEffect
 from PyQt5.QtCore import Qt, QTimer, QEasingCurve, QPropertyAnimation
-from PyQt5.QtGui import QPixmap, QFont, QCursor
+from PyQt5.QtGui import QPixmap, QFont, QCursor, QFontMetrics
 
 IMAGE_FOLDER   = "images"      # پوشه‌ی تصاویر کنار فایل
 SLIDE_DELAY_MS = 5000          # زمان هر اسلاید (میلی‌ثانیه)
@@ -44,15 +44,27 @@ class ScreenSaver(QWidget):
 
         self.day_label = QLabel(self)
         self.day_label.setStyleSheet(
-            "color: rgba(255, 255, 255, 0.8); background: transparent; letter-spacing: 2px;"
+            "color: rgba(255, 255, 255, 0.85); background: transparent; letter-spacing: 2px;"
         )
         self.day_label.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
         self.day_label.setMouseTracking(True)
 
         self.time_label = QLabel(self)
-        self.time_label.setStyleSheet("color: white; background: transparent;")
+        self.time_label.setStyleSheet(
+            "color: rgba(255, 255, 255, 0.9); background: transparent; letter-spacing: 1px;"
+        )
         self.time_label.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
         self.time_label.setMouseTracking(True)
+
+        self.signature_label = QLabel("Ali Zeiynali", self)
+        self.signature_label.setStyleSheet(
+            "color: rgba(255, 255, 255, 1); background: transparent; letter-spacing: 2px;"
+        )
+        self.signature_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.signature_label.setMouseTracking(True)
+        self.signature_effect = QGraphicsOpacityEffect(self.signature_label)
+        self.signature_effect.setOpacity(0.1)
+        self.signature_label.setGraphicsEffect(self.signature_effect)
 
         self.setMouseTracking(True)
 
@@ -146,12 +158,18 @@ class ScreenSaver(QWidget):
 
         w, h = max(1, self.width()), max(1, self.height())
         day_fs  = max(28, int(h * 0.09))   # بزرگتر از قبل
-        time_fs = max(18, int(h * 0.045))  # ~۴.۵٪ ارتفاع
+        time_fs = max(20, int(h * 0.05))   # ~۵٪ ارتفاع برای خوانایی بهتر
 
         day_font = QFont("Anurati", day_fs)
         day_font.setLetterSpacing(QFont.AbsoluteSpacing, 1.5)
         self.day_label.setFont(day_font)
-        self.time_label.setFont(QFont("Arial", time_fs))
+        time_font = QFont("Quicksand", time_fs)
+        time_font.setLetterSpacing(QFont.AbsoluteSpacing, 1.0)
+        self.time_label.setFont(time_font)
+
+        signature_font = QFont("Anurati", max(24, int(day_fs * 0.65)))
+        signature_font.setLetterSpacing(QFont.AbsoluteSpacing, 1.5)
+        self.signature_label.setFont(signature_font)
 
         self.day_label.setText(day_en)
         self.time_label.setText(time_str)
@@ -159,14 +177,32 @@ class ScreenSaver(QWidget):
         # جایگذاری پایین صفحه
         day_h  = int(day_fs * 1.4)
         time_h = int(time_fs * 1.4)
+        sig_h  = int(signature_font.pointSizeF() * 1.6)
         gap = int(h * 0.012)
         bottom = int(h * 0.03)
 
-        day_y  = h - bottom - day_h
-        time_y = day_y - gap - time_h
+        total_block_height = day_h + gap + time_h
+        base_y = h - bottom - total_block_height
+        day_y = base_y
+        time_y = day_y + day_h + gap
 
         self.day_label.setGeometry(0, day_y,  w, day_h)
         self.time_label.setGeometry(0, time_y, w, time_h)
+
+        # قرار دادن امضا کنار متن روز
+        day_metrics = QFontMetrics(day_font)
+        sig_metrics = QFontMetrics(signature_font)
+        day_width = day_metrics.horizontalAdvance(day_en)
+        sig_width = sig_metrics.horizontalAdvance(self.signature_label.text())
+        spacing = int(day_width * 0.08) if day_width else int(w * 0.02)
+        margin = int(w * 0.03)
+        center_x = w // 2
+        day_left = max(margin, center_x - day_width // 2)
+        sig_x = day_left + day_width + spacing
+        if sig_x + sig_width > w - margin:
+            sig_x = w - margin - sig_width
+        sig_y = day_y + max(0, (day_h - sig_h) // 2)
+        self.signature_label.setGeometry(sig_x, sig_y, sig_width, sig_h)
 
     # ---------- رویدادها ----------
     def resizeEvent(self, event):
