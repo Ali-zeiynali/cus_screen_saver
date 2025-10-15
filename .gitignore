@@ -4,3 +4,4 @@ dist/*
 *.space
 *.spec
 image/*
+*.exe
